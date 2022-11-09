@@ -32,7 +32,36 @@ class AuthError(Exception):
     return the token part of the header
 '''
 def get_token_auth_header():
-   raise Exception('Not Implemented')
+    """Obtains the Access Token from the Authorization Header
+    """
+    auth = request.headers.get('Authorization', None)
+    if not auth:
+        raise AuthError({
+            'code': 'authorization_header_missing',
+            'description': 'Authorization header is expected.'
+        }, 401)
+
+    parts = auth.split()
+    if parts[0].lower() != 'bearer':
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Authorization header must start with "Bearer".'
+        }, 401)
+
+    elif len(parts) == 1:
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Token not found.'
+        }, 401)
+
+    elif len(parts) > 2:
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Authorization header must be bearer token.'
+        }, 401)
+
+    token = parts[1]
+    return token
 
 '''
 @TODO implement check_permissions(permission, payload) method
@@ -46,6 +75,20 @@ def get_token_auth_header():
     return true otherwise
 '''
 def check_permissions(permission, payload):
+    if 'permissions' not in payload:
+        raise AuthError({
+            '''Check whether 'permissions' is present in our decoded JWT, if not raise an AuthError'''
+            'code': 'permissions not found',
+            'description': 'permissions not present in payload'
+        }, 400)
+
+    if permission not in payload['permissions']:
+        raise AuthError({
+            '''Check whether our specified permission(s) is present in the key 'permssions' in our decoded JWT if not raise an AuthError'''
+        })
+
+    return True
+
     raise Exception('Not Implemented')
 
 '''
@@ -62,6 +105,63 @@ def check_permissions(permission, payload):
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
 def verify_decode_jwt(token):
+    ''' In this method we get our JWT token and verify it'''
+    jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
+    jwks = json.loads(jsonurl.read())
+    unverified_header = jwt.get_unverified_header(token)
+    rsa_key = {}
+    if 'kid' not in unverified_header:
+        '''Check if kid is present in our decoded header, if not raise an AuthError'''
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Authorization malformed.'
+        }, 401)
+
+    for key in jwks['keys']:
+        if key['kid'] == unverified_header['kid']:
+            rsa_key = {
+                'kty': key['kty'],
+                'kid': key['kid'],
+                'use': key['use'],
+                'n': key['n'],
+                'e': key['e']
+            }
+    if rsa_key:
+        try:
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms=ALGORITHMS,
+                audience=API_AUDIENCE,
+                issuer='https://' + AUTH0_DOMAIN + '/'
+            )
+
+            return payload
+
+        except jwt.ExpiredSignatureError:
+            '''If provided token has expired raise an AuthError'''
+            raise AuthError({
+                'code': 'token_expired',
+                'description': 'Token expired.'
+            }, 401)
+
+        except jwt.JWTClaimsError:
+            '''If audience and issuer don't match the details provided in Auth0 raise an AuthError'''
+            raise AuthError({
+                'code': 'invalid_claims',
+                'description': 'Incorrect claims. Please, check the audience and issuer.'
+            }, 401)
+
+        except Exception:
+            raise AuthError({
+                'code': 'invalid_header',
+                'description': 'Unable to parse authentication token.'
+            }, 400)
+    raise AuthError({
+        'code': 'invalid_header',
+        'description': 'Unable to find the appropriate key.'
+    }, 400)
+
     raise Exception('Not Implemented')
 
 '''
@@ -79,9 +179,19 @@ def requires_auth(permission=''):
         @wraps(f)
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
-            payload = verify_decode_jwt(token)
-            check_permissions(permission, payload)
-            return f(payload, *args, **kwargs)
 
+            # Check if payload has a valid token and is formmated correctly
+            try:
+                payload = verify_decode_jwt(token)
+            except AuthError as error:
+                abort(error.status_code)
+
+            # Check for the appropriate user permissions
+            try:
+                check_permissions(permission, payload)
+            except AuthError as error:
+                abort(error.status_code)
+
+            return f(payload, *args, **kwargs)
         return wrapper
     return requires_auth_decorator
