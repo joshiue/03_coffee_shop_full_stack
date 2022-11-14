@@ -180,13 +180,13 @@ def requires_auth(permission=''):
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
 
-            # Check if payload has a valid token and is formmated correctly
+            # Check if payload has a valid token and correctly formmated
             try:
                 payload = verify_decode_jwt(token)
             except AuthError as error:
                 abort(error.status_code)
 
-            # Check for the appropriate user permissions
+            # Check if user has appropriate  permissions
             try:
                 check_permissions(permission, payload)
             except AuthError as error:
