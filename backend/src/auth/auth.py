@@ -10,7 +10,7 @@ AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN')
 ALGORITHMS = ['RS256']
 API_AUDIENCE = os.getenv('API_AUDIENCE')
 
-## AuthError Exception
+### AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
@@ -21,7 +21,7 @@ class AuthError(Exception):
         self.status_code = status_code
 
 
-## Auth Header
+### Auth Header
 
 '''
 @TODO implement get_token_auth_header() method
@@ -74,14 +74,14 @@ def get_token_auth_header():
 def check_permissions(permission, payload):
     if 'permissions' not in payload:
         raise AuthError({
-            '''Check whether 'permissions' is present in our decoded JWT, if not raise an AuthError'''
+            '''Check if 'permissions' is present in our decoded JWT, if not raise an AuthError'''
             'code': 'permissions not found',
             'description': 'permissions not present in payload'
         }, 400)
 
     if permission not in payload['permissions']:
         raise AuthError({
-            '''Check whether our specified permission(s) is present in the key 'permssions' in our decoded JWT if not raise an AuthError'''
+            '''Check if our specified permission is present in the key 'permssions' in our decoded JWT if not raise an AuthError'''
         })
 
     return True
@@ -100,13 +100,13 @@ def check_permissions(permission, payload):
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
 def verify_decode_jwt(token):
-    ''' In this method we get our JWT token and verify it'''
+    '''Here we get our JWT token and verify it'''
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
     rsa_key = {}
     if 'kid' not in unverified_header:
-        '''Check if kid is present in our decoded header, if not raise an AuthError'''
+        '''if kid is absent in our decoded header raise an AuthError'''
         raise AuthError({
             'code': 'invalid_header',
             'description': 'Authorization malformed.'
@@ -134,14 +134,14 @@ def verify_decode_jwt(token):
             return payload
 
         except jwt.ExpiredSignatureError:
-            '''If provided token has expired raise an AuthError'''
+            '''Where provided token expired raise an AuthError'''
             raise AuthError({
                 'code': 'token_expired',
                 'description': 'Token expired.'
             }, 401)
 
         except jwt.JWTClaimsError:
-            '''If audience and issuer don't match the details provided in Auth0 raise an AuthError'''
+            '''Where audience and issuer don't match provided details in Auth0 raise an AuthError'''
             raise AuthError({
                 'code': 'invalid_claims',
                 'description': 'Incorrect claims. Please, check the audience and issuer.'
@@ -174,13 +174,13 @@ def requires_auth(permission=''):
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
 
-            # Check if payload has a valid token and is formmated correctly
+            # Check if payload has a valid token that is formmated correctly
             try:
                 payload = verify_decode_jwt(token)
             except AuthError as error:
                 abort(error.status_code)
 
-            # Check for the appropriate user permissions
+            # Check for appropriate user permissions
             try:
                 check_permissions(permission, payload)
             except AuthError as error:
