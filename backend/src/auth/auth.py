@@ -6,9 +6,9 @@ from jose import jwt
 from urllib.request import urlopen
 
 
-AUTH0_DOMAIN = 'devxp.us.auth0.com'
+AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN')
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'coffee'
+API_AUDIENCE = os.getenv('API_AUDIENCE')
 
 # AuthError Exception
 '''
@@ -82,7 +82,6 @@ def get_token_auth_header():
     return true otherwise
 '''
 
-
 def check_permissions(permission, payload):
     if 'permissions' not in payload:
         raise AuthError({
@@ -95,11 +94,9 @@ def check_permissions(permission, payload):
             'code': 'unauthorized',
             'description': 'Permission not found.'
         }, 403)
-
     return True
 
-### check_permissions(permission, payload): call Exception('Not Implemented')
-
+### check permissions(permission, payload): call Exception('Not Implemented')
 
 '''
 @TODO implement verify_decode_jwt(token) method
@@ -169,6 +166,8 @@ def verify_decode_jwt(token):
         'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
     }, 400)
+### def verify decode jwt(token): call Exception('Not Implemented')
+
 
 '''
 @TODO implement @requires_auth(permission) decorator method
@@ -188,17 +187,19 @@ def requires_auth(permission=''):
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
 
-            # Confirm payload token is valid and in correct format
+        ### Confirm payload token is valid and in correct format
             try:
                 payload = verify_decode_jwt(token)
             except AuthError as error:
                 abort(error.status_code)
 
-            # Confirm appropriate user permissions is in use
+        ### Confirm appropriate user permissions is in use
             try:
                 check_permissions(permission, payload)
             except AuthError as error:
-                abort(error.status_code)            
+                abort(error.status_code)
+
             return f(payload, *args, **kwargs)
         return wrapper
-    return requires_auth_decorator    
+    return requires_auth_decorator
+    
