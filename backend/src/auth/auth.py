@@ -198,8 +198,7 @@ def requires_auth(permission=''):
             try:
                 check_permissions(permission, payload)
             except AuthError as error:
-                abort(error.status_code)
-
+                abort(error.status_code)            
             return f(payload, *args, **kwargs)
         return wrapper
     return requires_auth_decorator    
