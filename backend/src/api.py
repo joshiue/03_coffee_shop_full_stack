@@ -59,21 +59,23 @@ def get_drinks():
 
 @requires_auth('get:drinks-detail')
 
-def get_drink_detail(payload):
+def get_drink_detail(can):
+    try:
+        
+        drinks = Drink.query.all()
 
-    drinks = Drink.query.all()
+        if len(drinks) == 0 :
 
-    if len(drinks) == 0 :
+            abort(404)
 
-        abort(404)
+        drinks_long = [drink.long() for drink in drinks]
 
-    drinks_long = [drink.long() for drink in drinks]
+        response = {'success': True,
+            'drinks': drinks_long}
 
-    response = {'success': True,
-        'drinks': drinks_long}
-
-    return jsonify(response), 200
-
+        return jsonify(response), 200
+    except BaseException:
+        abort(422)
 '''
 @TODO implement endpoint
     POST /drinks
@@ -254,3 +256,11 @@ def method_not_allowed(error):
         "error": 405,
         "message": 'Method Not Allowed'}
     return jsonify(response), 405
+
+@app.errorhandler(422)
+def unprocessable(error):
+    return jsonify({
+        "success": False,
+        "error": 422,
+        "message": "unprocessable"
+    }), 422
