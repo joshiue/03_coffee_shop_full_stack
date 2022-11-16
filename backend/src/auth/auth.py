@@ -5,10 +5,9 @@ from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
 
-
-AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN')
+AUTH0_DOMAIN = 'devxp.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = os.getenv('API_AUDIENCE')
+API_AUDIENCE = 'coffee'
 
 # AuthError Exception
 '''
@@ -16,12 +15,10 @@ AuthError Exception
 A standardized way to communicate auth failure modes
 '''
 
-
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
-
 
 # Auth Header
 
@@ -33,7 +30,6 @@ class AuthError(Exception):
         it should raise an AuthError if the header is malformed
     return the token part of the header
 '''
-
 
 def get_token_auth_header():
     """Get Access Token from Authorization Header
@@ -69,7 +65,6 @@ def get_token_auth_header():
 
 ### get token auth header(): call Exception('Not Implemented')
 
-
 '''
 @TODO implement check_permissions(permission, payload) method
     @INPUTS
@@ -94,9 +89,10 @@ def check_permissions(permission, payload):
             'code': 'unauthorized',
             'description': 'Permission not found.'
         }, 403)
+
     return True
 
-### check permissions(permission, payload): call Exception('Not Implemented')
+### check_permissions(permission, payload): call Exception('Not Implemented')
 
 '''
 @TODO implement verify_decode_jwt(token) method
@@ -111,7 +107,6 @@ def check_permissions(permission, payload):
 
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
-
 
 def verify_decode_jwt(token):
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
@@ -166,8 +161,6 @@ def verify_decode_jwt(token):
         'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
     }, 400)
-### def verify decode jwt(token): call Exception('Not Implemented')
-
 
 '''
 @TODO implement @requires_auth(permission) decorator method
@@ -180,26 +173,23 @@ def verify_decode_jwt(token):
     return the decorator which passes the decoded payload to the decorated method
 '''
 
-
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
 
-        ### Confirm payload token is valid and in correct format
+            ### Confirm payload token is valid and in correct format
             try:
                 payload = verify_decode_jwt(token)
             except AuthError as error:
-                abort(error.status_code)
+                abort(403)
 
-        ### Confirm appropriate user permissions is in use
+            ### Confirm appropriate user permissions is in use
             try:
                 check_permissions(permission, payload)
             except AuthError as error:
-                abort(error.status_code)
-
+                abort(error.status_code)            
             return f(payload, *args, **kwargs)
         return wrapper
     return requires_auth_decorator
-    

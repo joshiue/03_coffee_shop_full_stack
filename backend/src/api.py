@@ -88,31 +88,22 @@ def get_drink_detail(payload):
         or appropriate status code indicating reason for failure
 '''
 
-
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def create_drink(payload):
+def post_drinks(jwt):
+    drinks = request.get_json()
+    new_title = drinks.get('title')
+    new_recipe = drinks.get('recipe')
+    recepe = json.dumps(new_recipe)
 
-    body = request.get_json()
-    try:
-        recipe = body['recipe']
-        if isinstance(recipe, dict):
-            recipe  = [recipe]
-        drink = Drink()
-        drink.title = body['title']
-        drink.recipe = json.dumps(recipe)  
-        drink.insert()
+    responses = Drink(title=new_title, recipe=recepe)
 
-    except BaseException:
+    responses.insert()
 
-        abort(400)
-
-    response = {
+    return jsonify({
         'success': True,
-        'drinks': [drink.long()],
-    }
-
-    return jsonify(response), 200
+        'drinks': [drinking.long() for drinking in Drink.query.all()]
+    })
 
 '''
 @TODO implement endpoint
@@ -167,7 +158,7 @@ def update_drink(payload, id):
 @requires_auth('delete:drinks')
 def delete_drink(payload, id):
   
-###drink = Drink.query.filter-format(Drink.id === id).one_none()
+###drink = Drink.query.filter (Drink.id === id).one_none()
     drink = Drink.query.filter_by(id=id)
 
     if not drink:
@@ -270,14 +261,4 @@ def method_not_allowed(error):
         "error": 405,
         "message": 'Method Not Allowed'
     }
- 
     return jsonify(response), 405
-
-'''
-export FLASK_APP=api.py;
-export FLASK_RUN_PORT=8080
-flask run --reload
-ionic serve 
-http://127.0.0.1:8080/drinks
-http://127.0.0.1:8080/drinks-detail
-'''
