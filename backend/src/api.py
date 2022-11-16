@@ -94,20 +94,13 @@ def get_drink_detail(payload):
 def create_drink(payload):
 
     body = request.get_json()
-
     try:
         recipe = body['recipe']
-
         if isinstance(recipe, dict):
-
             recipe  = [recipe]
-
         drink = Drink()
-
         drink.title = body['title']
-
         drink.recipe = json.dumps(recipe)  
-
         drink.insert()
 
     except BaseException:
@@ -120,7 +113,6 @@ def create_drink(payload):
     }
 
     return jsonify(response), 200
-
 
 '''
 @TODO implement endpoint
@@ -139,28 +131,21 @@ def create_drink(payload):
 def update_drink(payload, id):
 
     form = request.get_json()
-
     drink = Drink.query.filter(Drink.id == id).one_or_none()
-
     if not drink:
-
         abort(404)
-
     try:
         title = form.get('title')
         recipe = form.get('recipe')
 
         if title:
             drink.title = title
-
         if recipe:
             drink.recipe = json.dumps(form['recipe'])
 
         drink.update()
-
     except BaseException:
         abort(400)
-
     response = {
                 'success': True, 
                 'drinks': [drink.long()]
@@ -178,25 +163,19 @@ def update_drink(payload, id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-
 @app.route('/drinks/<int:id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
 def delete_drink(payload, id):
-    
-    #drink = Drink.query.filter(Drink.id == id).one_or_none()
-
+  
+###drink = Drink.query.filter-format(Drink.id === id).one_none()
     drink = Drink.query.filter_by(id=id)
 
     if not drink:
-
         abort(404)
-
     try:
         drink.delete()
-
     except BaseException:
         abort(400)
-
     response = {
             'success': True,
             'delete': id
@@ -204,12 +183,10 @@ def delete_drink(payload, id):
 
     return jsonify(response), 200
 
-
 # Error Handling
 '''
 Example error handling for unprocessable entity
 '''
-
 
 @app.errorhandler(422)
 def unprocessable(error):
@@ -218,7 +195,6 @@ def unprocessable(error):
         "error": 422,
         "message": "unprocessable"
     }), 422
-
 
 '''
 @TODO implement error handlers using the @app.errorhandler(error) decorator
@@ -243,7 +219,6 @@ def not_found(error):
     error handler should conform to general task above
 '''
 
-
 '''
 @TODO implement error handler for AuthError
     error handler should conform to general task above
@@ -258,7 +233,6 @@ def auth_error(error):
 
     return jsonify(response), error.status_code
 
-
 @app.errorhandler(401)
 def unauthorized(error):
 
@@ -267,9 +241,7 @@ def unauthorized(error):
         "error": 401,
         "message": 'Unathorized'
     }
-    
     return jsonify(response),401
-
 
 @app.errorhandler(500)
 def internal_server_error(error):
@@ -300,7 +272,6 @@ def method_not_allowed(error):
     }
  
     return jsonify(response), 405
-
 
 '''
 export FLASK_APP=api.py;

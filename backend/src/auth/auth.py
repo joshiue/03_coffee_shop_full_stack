@@ -36,7 +36,7 @@ class AuthError(Exception):
 
 
 def get_token_auth_header():
-    """Obtains the Access Token from the Authorization Header
+    """Get Access Token from Authorization Header
     """
     auth = request.headers.get('Authorization', None)
     if not auth:
@@ -67,8 +67,7 @@ def get_token_auth_header():
     token = parts[1]
     return token
 
-# def get_token_auth_header():
-#    raise Exception('Not Implemented')
+### get token auth header(): call Exception('Not Implemented')
 
 
 '''
@@ -99,8 +98,7 @@ def check_permissions(permission, payload):
 
     return True
 
-# def check_permissions(permission, payload):
-    # raise Exception('Not Implemented')
+### check_permissions(permission, payload): call Exception('Not Implemented')
 
 
 '''
@@ -171,9 +169,6 @@ def verify_decode_jwt(token):
         'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
     }, 400)
-# def verify_decode_jwt(token):
-    # raise Exception('Not Implemented')
-
 
 '''
 @TODO implement @requires_auth(permission) decorator method
@@ -193,13 +188,13 @@ def requires_auth(permission=''):
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
 
-            # Check if payload has a valid token and is formmated correctly
+            # Confirm payload token is valid and in correct format
             try:
                 payload = verify_decode_jwt(token)
             except AuthError as error:
                 abort(error.status_code)
 
-            # Check for the appropriate user permissions
+            # Confirm appropriate user permissions is in use
             try:
                 check_permissions(permission, payload)
             except AuthError as error:
@@ -207,4 +202,4 @@ def requires_auth(permission=''):
 
             return f(payload, *args, **kwargs)
         return wrapper
-    return requires_auth_decorator
+    return requires_auth_decorator    
