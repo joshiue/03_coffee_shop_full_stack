@@ -152,17 +152,15 @@ def requires_auth(permission=''):
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
 
-            ### Confirm payload token is valid and in correct format
+        ### Confirm payload token is valid and in correct format
             try:
                 payload = verify_decode_jwt(token)
-            except AuthError as error:
-                abort(error.status_code)
-
-            ### Confirm appropriate user permissions is in use
-            try:
+            except:
+                raise AuthError({'code': 'unauthorized',
+                    'description': 'Unauthorized'}, 401)
+                
+        ### Confirm appropriate user permissions is in use        
                 check_permissions(permission, payload)
-            except AuthError as error:
-                abort(error.status_code)            
             return f(payload, *args, **kwargs)
         return wrapper
     return requires_auth_decorator
