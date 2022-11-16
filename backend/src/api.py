@@ -41,10 +41,8 @@ def get_drinks():
 
     drinks_short = [drink.short() for drink in drinks]
 
-    response = {
-        'success': True,
-        'drinks': drinks_short,
-        }
+    response = {'success': True,
+        'drinks': drinks_short,}
 
     return jsonify(response) , 200
 
@@ -71,10 +69,8 @@ def get_drink_detail(payload):
 
     drinks_long = [drink.long() for drink in drinks]
 
-    response = {
-        'success': True,
-        'drinks': drinks_long
-    }
+    response = {'success': True,
+        'drinks': drinks_long}
 
     return jsonify(response), 200
 
@@ -100,10 +96,8 @@ def post_drinks(jwt):
 
     responses.insert()
 
-    return jsonify({
-        'success': True,
-        'drinks': [drinking.long() for drinking in Drink.query.all()]
-    })
+    return jsonify({'success': True,
+        'drinks': [drinking.long() for drinking in Drink.query.all()]})
 
 '''
 @TODO implement endpoint
@@ -137,10 +131,8 @@ def update_drink(payload, id):
         drink.update()
     except BaseException:
         abort(400)
-    response = {
-                'success': True, 
-                'drinks': [drink.long()]
-                }
+    response = {'success': True,
+                'drinks': [drink.long()]}
 
     return jsonify(response), 200
 
@@ -167,10 +159,8 @@ def delete_drink(payload, id):
         drink.delete()
     except BaseException:
         abort(400)
-    response = {
-            'success': True,
-            'delete': id
-            }
+    response = {'success': True,
+            'delete': id}
 
     return jsonify(response), 200
 
@@ -181,11 +171,9 @@ Example error handling for unprocessable entity
 
 @app.errorhandler(422)
 def unprocessable(error):
-    return jsonify({
-        "success": False,
+    return jsonify({"success": False,
         "error": 422,
-        "message": "unprocessable"
-    }), 422
+        "message": "unprocessable"}), 422
 
 '''
 @TODO implement error handlers using the @app.errorhandler(error) decorator
@@ -198,11 +186,9 @@ def unprocessable(error):
 '''
 @app.errorhandler(404)
 def not_found(error):
-    response = {
-        "success": False,
+    response = {"success": False,
         "error": 404,
-        "message": "resource not found"
-    }
+        "message": "resource not found"}
     return jsonify(response), 404
 
 '''
@@ -216,49 +202,38 @@ def not_found(error):
 '''
 @app.errorhandler(AuthError)
 def auth_error(error):
-
     response ={
         "success": False,
         "error": error.status_code,
         "message": error.error['description']}
-
     return jsonify(response), error.status_code
 
 @app.errorhandler(401)
 def unauthorized(error):
-
-    response = {
-        "success": False,
+    response = {"success": False,
         "error": 401,
-        "message": 'Unathorized'
-    }
+        "message": 'Unathorized'}
     return jsonify(response),401
 
 @app.errorhandler(500)
 def internal_server_error(error):
-    response = {
-        "success": False,
+    response = {"success": False,
         "error": 500,
-        "message": 'Internal Server Error'
-    }
+        "message": 'Internal Server Error'}
     return jsonify(response),500
 
 
 @app.errorhandler(400)
 def bad_request(error):
-    response = {
-        "success": False,
+    response = {"success": False,
         "error": 400,
-        "message": 'Bad Request'
-    }
+        "message": 'Bad Request'}
     return jsonify(response), 400
 
 
 @app.errorhandler(405)
 def method_not_allowed(error):
-    response = {
-        "success": False,
+    response = {"success": False,
         "error": 405,
-        "message": 'Method Not Allowed'
-    }
+        "message": 'Method Not Allowed'}
     return jsonify(response), 405
